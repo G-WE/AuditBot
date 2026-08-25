@@ -66,3 +66,8 @@ app.command("/auditbot-history", async ({ command, ack, respond }) => {
   const history = mockDB.map(event => `${event.type} ${event.amount} ${event.reason} ${new Date(event.timestamp).toLocaleString()}`).join("\n");
   return respond({ text: `History:\n${history}` });
 });
+
+(async () => {
+  await app.start();
+  console.log("Auditbot is running!");
+})();
