@@ -28,14 +28,7 @@ app.command("/auditbot-log", async ({ command, ack, respond }) => {
   if (reason.length > 100) {
     return respond({ text: "Reason must be less than 100 characters." });
   }
-  const event = {
-    type,
-    amount,
-    reason,
-    timestamp: Date.now()
-  }
-  mockDB.push(event);
-  return respond({ text: `Event logged successfully: ${JSON.stringify(event)}` });
+  return respond({ text: `Event logged successfully: ${type} ${amount} ${reason}` });
 });
 
 app.command("/auditbot-balance", async ({ command, ack, respond }) => {
@@ -63,7 +56,7 @@ app.command("/auditbot-help", async ({ command, ack, respond }) => {
 
 app.command("/auditbot-history", async ({ command, ack, respond }) => {
   await ack();
-  const history = mockDB.map(event => `${event.type} ${event.amount} ${event.reason} ${new Date(event.timestamp).toLocaleString()}`).join("\n");
+  const history = mockDB.map(event => `${event.type} ${event.amount} ${event.reason}`).join("\n");
   return respond({ text: `History:\n${history}` });
 });
 
