@@ -29,6 +29,7 @@ app.command("/auditbot-log", async ({ command, ack, respond }) => {
     return respond({ text: "Reason must be less than 100 characters." });
   }
   return respond({ text: `Event logged successfully: ${type} ${amount} ${reason}` });
+  mockDB.push({ type, amount, reason });
 });
 
 app.command("/auditbot-balance", async ({ command, ack, respond }) => {
