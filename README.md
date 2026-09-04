@@ -1,2 +1,2 @@
-# AuditBot
-A auditor bot that tracks your expenses.
+# Regular bot
+
