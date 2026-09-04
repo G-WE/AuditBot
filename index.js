@@ -1,6 +1,7 @@
 require("dotenv").config();
 
 const { App } = require("@slack/bolt");
+const axios = require("axios");
 
 const app = new App({
   token: process.env.SLACK_BOT_TOKEN,
@@ -8,60 +9,51 @@ const app = new App({
   socketMode: true
 });
 
-const mockDB = []
-
-app.command("/auditbot-log", async ({ command, ack, respond }) => {
+app.command("/bot_name-ping", async ({ command, ack, respond }) => {
+  const start = Date.now();
   await ack();
-  const args = command.text.trim().split(" ");
-  const type = args[0].toLowerCase();
-  const amount = parseFloat(args[1]);
-  const reason = args.slice(2).join(" ");
-  if (args.length < 3) {
-    return respond({ text: "Usage: /auditbot-log <type> <amount> <reason>" });
-  }
-  if (type !== "income" && type !== "expense") {
-    return respond({ text: "Invalid type. Must be 'income' or 'expense'." });
-  }
-  if (isNaN(amount)) {
-    return respond({ text: "Amount must be a number." });
-  }
-  if (reason.length > 100) {
-    return respond({ text: "Reason must be less than 100 characters." });
-  }
-  return respond({ text: `Event logged successfully: ${type} ${amount} ${reason}` });
-  mockDB.push({ type, amount, reason });
+  const latency = Date.now() - start;
+  await respond({ text: `Pong!\nLatency: ${latency}ms` });
 });
 
-app.command("/auditbot-balance", async ({ command, ack, respond }) => {
+app.command("/bot_name-help", async ({ ack, respond }) => {
   await ack();
-  let totalGain = 0;
-  let totalLoss = 0;
-  for (const event of mockDB) {
-    if (event.type === "income") {
-      totalGain += event.amount;
-    } else {
-      totalLoss += event.amount;
-    }
+  await respond({
+    text:
+`Available Commands:
+/bot_name-ping - Check bot latency
+/bot_name-catfact - Get a cat fact`
+  });
+});
+
+app.command("/bot_name-catfact", async ({ ack, respond }) => {
+  await ack();
+
+  try {
+    const response = await axios.get("https://catfact.ninja/fact");
+    await respond({ text: `Cat Fact:\n${response.data.fact}` });
+  } catch (err) {
+    await respond({ text: "Failed to fetch a cat fact." });
   }
-  const balance = totalGain - totalLoss;
-  return respond({ text: `Total gain: ${totalGain}, Total loss: ${totalLoss}, Balance: ${balance}` });
 });
 
-app.command("/auditbot-help", async ({ command, ack, respond }) => {
+app.command("/bot_name-joke", async ({ ack, respond }) => {
   await ack();
-  return respond({ text: `Available commands:
-  /auditbot-log <type> <amount> <reason> - Log an event
-  /auditbot-balance - Get the current balance
-  /auditbot-help - Show this help message` });
-});
 
-app.command("/auditbot-history", async ({ command, ack, respond }) => {
-  await ack();
-  const history = mockDB.map(event => `${event.type} ${event.amount} ${event.reason}`).join("\n");
-  return respond({ text: `History:\n${history}` });
+  try {
+    const response = await axios.get("https://official-joke-api.appspot.com/random_joke");
+    await respond({
+      text:
+`${response.data.setup}
+
+${response.data.punchline}`
+    });
+  } catch (err) {
+    await respond({ text: "Failed to fetch a joke." });
+  }
 });
 
 (async () => {
   await app.start();
-  console.log("Auditbot is running!");
+  console.log("bot is running!");
 })();
